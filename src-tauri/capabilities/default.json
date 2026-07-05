@@ -1,0 +1,11 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Permissions for the compact status overlay window",
+  "windows": ["main"],
+  "permissions": [
+    "core:event:allow-listen",
+    "core:window:allow-close",
+    "core:window:allow-show"
+  ]
+}

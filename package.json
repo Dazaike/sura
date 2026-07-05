@@ -1,0 +1,18 @@
+{
+  "name": "sura",
+  "private": true,
+  "version": "22.9.8",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.10.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.10.1",
+    "vite": "^7.1.12"
+  }
+}
