@@ -1,0 +1,20 @@
+[package]
+name = "sura"
+version = "22.9.8"
+description = "Sura compact status overlay"
+authors = ["Dazaike"]
+edition = "2021"
+default-run = "sura"
+
+[lib]
+name = "tauri_status_overlay_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_System_Threading", "Win32_UI_Accessibility", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging"] }
