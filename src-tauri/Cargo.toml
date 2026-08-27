@@ -1,6 +1,6 @@
 [package]
 name = "sura"
-version = "22.9.8"
+version = "22.9.13"
 description = "Sura compact status overlay"
 authors = ["Dazaike"]
 edition = "2021"
