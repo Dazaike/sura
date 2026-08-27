@@ -18,7 +18,8 @@ Small Windows tray/overlay launcher for Steam games with optional [TcNo Account 
 - [Rust](https://rustup.rs/) and [Node.js](https://nodejs.org/) for building
 - [.NET is not required](.) — native Tauri binary
 - [TcNo Account Switcher](https://github.com/Tc-No/TcNo-Acc-Switcher) installed if you use account switching
-- [AutoHotkey v1.1](https://www.autohotkey.com/) for the legacy helper scripts (optional)
+- [AutoHotkey v2.0](https://www.autohotkey.com/) for `Sura Command Generator.ahk` and `SuraGameWatch.ahk`
+- [AutoHotkey v1.1](https://www.autohotkey.com/) for the legacy helper script `Steam Game CLI.ahk` (optional)
 
 ## Configuration
 
@@ -59,6 +60,24 @@ Legacy AutoHotkey entry point:
 ```text
 Steam Game CLI.ahk start "+s:YOUR_STEAM_ID:0" 3017860 "My Game"
 ```
+
+
+## Command Generator GUI
+
+`Sura Command Generator.ahk` provides an interactive AutoHotkey v2 GUI to build, test, and export Sura commands with zero manual formatting:
+
+```text
+"Sura Command Generator.ahk"
+```
+
+Features:
+- Interactive mode picker for all Sura commands (`start`, `start<appid>`, `start nsg`, `switch`, `close`, `preview`, `watch`).
+- Real-time `Sura.exe` command preview with automatic quoting and argument sanitization.
+- **`{InstallDir}` Helper**: One-click inline insertion and dedicated clipboard copy button for `{InstallDir}` path macro.
+- **Copy Command**: instant one-click copy to Windows clipboard.
+- **Run Command**: execute generated command directly.
+- **Save .bat**: export ready-to-use batch launcher scripts.
+- **Create Shortcut**: generate Windows `.lnk` shortcuts with target parameters.
 
 ## Notes
 
