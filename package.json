@@ -1,7 +1,7 @@
 {
   "name": "sura",
   "private": true,
-  "version": "22.9.13",
+  "version": "22.9.14",
   "type": "module",
   "scripts": {
     "dev": "vite",
