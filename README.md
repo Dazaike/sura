@@ -1,6 +1,8 @@
 # Sura
 
-Small Windows tray/overlay launcher for Steam games with optional [TcNo Account Switcher](https://github.com/Tc-No/TcNo-Acc-Switcher) integration. Shows a compact progress UI while switching accounts, launching games, and hiding transient Steam windows.
+**v22.9.15** — Windows overlay launcher for Steam games with optional [TcNo Account Switcher](https://github.com/Tc-No/TcNo-Acc-Switcher) integration. Compact progress UI while switching accounts, launching games, closing Steam, and hiding transient Steam windows.
+
+`close` / `start` shut Steam down in-process (`steam.exe -shutdown`, then force-kill). No external `kill-steam.exe`.
 
 ## What it does
 
@@ -29,10 +31,11 @@ Edit the defaults at the top of these files before first use:
 
 ```rust
 const DEFAULT_CLOSE_ACCOUNT: &str = "+s:YOUR_STEAM_ID:0";
-const DEFAULT_KILL_STEAM: &str = r"C:\Path\To\kill-steam.exe";
 ```
 
-**`Steam Game CLI.ahk`** — same placeholders for `DefaultCloseAccount` and `DefaultKillSteam`.
+Steam close is built in (`steam.exe -shutdown`, then force-kill if needed). No external `kill-steam.exe`.
+
+**`Steam Game CLI.ahk`** — same placeholder for `DefaultCloseAccount`.
 
 TcNo account arguments use TcNo's `+s:STEAM_ID:INDEX` format. Get the values from TcNo Account Switcher.
 

@@ -32,7 +32,7 @@ use windows_sys::Win32::{
 const CREATE_NO_WINDOW: u32 = 0x08000000;
 
 const DEFAULT_CLOSE_ACCOUNT: &str = "+s:YOUR_STEAM_ID:0";
-const DEFAULT_KILL_STEAM: &str = r"C:\Path\To\kill-steam.exe";
+
 const TCNO_MAIN_PATH: &str = r"C:\Program Files\TcNo Account Switcher\TcNo-Acc-Switcher_main.exe";
 
 #[derive(Clone, Serialize)]
@@ -52,7 +52,9 @@ pub fn run() {
 
             thread::spawn(move || {
                 thread::sleep(Duration::from_millis(350));
-                run_cli(window, args);
+                run_cli(window.clone(), args);
+                thread::sleep(Duration::from_millis(1000));
+                let _ = window.close();
             });
 
             Ok(())
@@ -96,18 +98,7 @@ fn run_cli(window: WebviewWindow, args: Vec<String>) {
             let account_arguments = &args[1];
             let steam_game_id = &args[2];
             let game_name = args.get(3).map(String::as_str).unwrap_or(steam_game_id);
-            let kill_steam_path = args
-                .get(4)
-                .map(String::as_str)
-                .unwrap_or(DEFAULT_KILL_STEAM);
-
-            steam_cli_start(
-                &window,
-                game_name,
-                account_arguments,
-                steam_game_id,
-                kill_steam_path,
-            );
+            steam_cli_start(&window, game_name, account_arguments, steam_game_id);
         }
         command if command.starts_with("start") && command.len() > "start".len() => {
             let steam_game_id = &command["start".len()..];
@@ -149,20 +140,10 @@ fn run_cli(window: WebviewWindow, args: Vec<String>) {
                 .get(1)
                 .map(String::as_str)
                 .unwrap_or(DEFAULT_CLOSE_ACCOUNT);
-            let kill_steam_path = args
-                .get(2)
-                .map(String::as_str)
-                .unwrap_or(DEFAULT_KILL_STEAM);
-            let extra_kill_list = args.get(3).map(String::as_str).unwrap_or("");
-            let game_name = args.get(4).map(String::as_str).unwrap_or("Steam");
+            let extra_kill_list = args.get(2).map(String::as_str).unwrap_or("");
+            let game_name = args.get(3).map(String::as_str).unwrap_or("Steam");
 
-            steam_cli_close(
-                &window,
-                game_name,
-                account_arguments,
-                kill_steam_path,
-                extra_kill_list,
-            );
+            steam_cli_close(&window, game_name, account_arguments, extra_kill_list);
         }
         "watch" => {
             if args.len() < 2 {
@@ -181,21 +162,11 @@ fn steam_cli_start(
     game_name: &str,
     account_arguments: &str,
     steam_game_id: &str,
-    kill_steam_path: &str,
 ) {
     emit_progress(window, &format!("Starting {game_name}"), 4);
 
-    if process_exists("steamservice.exe") {
-        emit_progress(window, "Closing Steam...", 12);
-        run_window_hidden(kill_steam_path, &[]);
-        wait_for_process_exit(
-            window,
-            "steamservice.exe",
-            "Closing Steam...",
-            12,
-            38,
-            30_000,
-        );
+    if process_exists("steam.exe") {
+        shutdown_steam(window, 12, 38, 30_000);
     } else {
         emit_progress(window, "No Steam shutdown needed.", 18);
         loading_wait(window, 500, 18, 34, "Preparing account switch...");
@@ -239,20 +210,11 @@ fn steam_cli_close(
     window: &WebviewWindow,
     game_name: &str,
     account_arguments: &str,
-    kill_steam_path: &str,
     extra_kill_list: &str,
 ) {
     emit_progress(window, &format!("Closing {game_name}"), 10);
 
-    run_window_hidden(kill_steam_path, &[]);
-    wait_for_process_exit(
-        window,
-        "steamservice.exe",
-        "Closing Steam...",
-        10,
-        70,
-        60_000,
-    );
+    shutdown_steam(window, 10, 70, 60_000);
 
     emit_progress(window, "Switching back to default account...", 76);
     run_tcno(account_arguments);
@@ -362,6 +324,7 @@ fn emit_progress(window: &WebviewWindow, status: &str, percent: u8) {
             percent: percent.min(100),
         },
     );
+    let _ = window.show();
 }
 
 fn finish_with_usage(window: &WebviewWindow) {
@@ -386,6 +349,58 @@ fn process_exists(process_name: &str) -> bool {
             .to_ascii_lowercase()
             .contains(&process_name.to_ascii_lowercase()),
         _ => false,
+    }
+}
+
+fn steam_exe_path() -> Option<String> {
+    const CANDIDATES: [&str; 2] = [
+        r"C:\Program Files (x86)\Steam\steam.exe",
+        r"C:\Program Files\Steam\steam.exe",
+    ];
+    CANDIDATES
+        .into_iter()
+        .find(|path| std::path::Path::new(path).is_file())
+        .map(str::to_string)
+}
+
+fn force_kill_steam_client() {
+    run_hidden("taskkill", &["/F", "/IM", "steam.exe"]);
+    run_hidden("taskkill", &["/F", "/IM", "steamwebhelper.exe"]);
+}
+
+fn shutdown_steam(window: &WebviewWindow, start_percent: u8, end_percent: u8, timeout_ms: u64) {
+    if !process_exists("steam.exe") {
+        emit_progress(window, "No Steam shutdown needed.", start_percent);
+        return;
+    }
+
+    emit_progress(window, "Closing Steam...", start_percent);
+
+    if let Some(steam_exe) = steam_exe_path() {
+        run_hidden(&steam_exe, &["-shutdown"]);
+    } else {
+        launch_steam_url("steam://exit");
+    }
+
+    wait_for_process_exit(
+        window,
+        "steam.exe",
+        "Closing Steam...",
+        start_percent,
+        end_percent,
+        timeout_ms,
+    );
+
+    if process_exists("steam.exe") {
+        force_kill_steam_client();
+        wait_for_process_exit(
+            window,
+            "steam.exe",
+            "Closing Steam...",
+            end_percent.saturating_sub(4).max(start_percent),
+            end_percent,
+            10_000,
+        );
     }
 }
 
